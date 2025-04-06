@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Assignment</title>
+</head>
+<body>
+    <h2>Submit Assignment for Grading</h2>
+    <form action="/upload-pdfs" method="post" enctype="multipart/form-data">
+        <label>Student ID: <input type="text" name="student_id" required></label><br><br>
+        <label>Assignment ID: <input type="text" name="assignment_id" required></label><br><br>
+        <label>Assignment PDF: <input type="file" name="assignment_pdf" required></label><br><br>
+        <label>Questions PDF: <input type="file" name="questions_pdf" required></label><br><br>
+        <label>Textbook PDF (optional): <input type="file" name="textbook_pdf"></label><br><br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

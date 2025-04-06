@@ -1,0 +1,13 @@
+# .dockerignore
+
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.txt
+.DS_Store
+*.env
+*.local
+serviceAccountKey.json

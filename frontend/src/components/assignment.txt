@@ -1,0 +1,53 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+function AssignmentList({ studentId }) {
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      try {
+        const res = await axios.get(`https://5000-idx-gdg-doordie-1743806459319.cluster-iktsryn7xnhpexlu6255bftka4.cloudworkstations.dev/api/grades/${studentId}`);
+        console.log(res.data); // inspect API response
+        setAssignments(res.data); // assuming res.data is Array
+      } catch (err) {
+        console.error(err);
+        setError("Failed to fetch assignments.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAssignments();
+  }, [studentId]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+
+  return (
+    <div>
+      <h2>Assignments for Student ID: {studentId}</h2>
+
+      {assignments.length === 0 ? (
+        <p>No assignments found.</p>
+      ) : (
+        assignments.map((assignment) => (
+          <div key={assignment.assignment_id} style={{ marginBottom: "1rem" }}>
+            <h3>Assignment ID: {assignment.assignment_id}</h3>
+            <a
+              href={assignment.assignment_pdf}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View PDF
+            </a>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+export default AssignmentList;
