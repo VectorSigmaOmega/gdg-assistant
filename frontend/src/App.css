@@ -1,9 +1,8 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+/*
+  We've removed the styles for #root here.
+  The layout is now controlled by Tailwind CSS classes in App.jsx,
+  which allows the main container to be full-width.
+*/
 
 .logo {
   height: 6em;

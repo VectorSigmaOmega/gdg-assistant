@@ -26,3 +26,8 @@ yarn-error.log*
 
 # Environment files (local configs)
 /.env.*
+
+/backend/__pycache__
+/backend/env
+/backend/.env
+/backend/serviceAccountKey.json

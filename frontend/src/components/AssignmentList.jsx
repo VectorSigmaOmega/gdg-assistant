@@ -11,7 +11,7 @@ function AssignmentList({ studentId }) {
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
-        const res = await axios.get(`https://5000-idx-gdg-doordie-1743806459319.cluster-iktsryn7xnhpexlu6255bftka4.cloudworkstations.dev/api/grades/${studentId}`);
+        const res = await axios.get(`/api/grades/${studentId}`);
         setAssignments(res.data);
       } catch (err) {
         console.error(err);
@@ -26,7 +26,7 @@ function AssignmentList({ studentId }) {
 
   const handleViewDetails = async (assignmentId) => {
     try {
-      const res = await axios.get(`https://5000-idx-gdg-doordie-1743806459319.cluster-iktsryn7xnhpexlu6255bftka4.cloudworkstations.dev/api/grades/${studentId}/${assignmentId}`);
+      const res = await axios.get(`/api/grades/${studentId}/${assignmentId}`);
       setGradingData(res.data);
     } catch (err) {
       console.error("Error fetching grading details:", err);
