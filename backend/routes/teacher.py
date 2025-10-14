@@ -1,3 +1,4 @@
+import traceback
 from flask import Blueprint, request, jsonify
 from firebase_config import db, bucket
 import uuid
@@ -50,4 +51,6 @@ def create_assignment():
         return jsonify({"message": "Assignment created successfully", "assignment_id": assignment_id})
 
     except Exception as e:
+        print("An error occurred:")
+        traceback.print_exc() 
         return jsonify({"error": str(e)}), 500
