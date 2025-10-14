@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from firebase_config import db, bucket
-import os, tempfile
+import os, tempfile, time
 from grading import run_grading
 
 upload_bp = Blueprint("upload", __name__, url_prefix="/api")
@@ -48,10 +48,26 @@ def upload_assignment():
         blob_name = url[len(prefix):]  # remove prefix to get blob path
 
         blob = bucket.blob(blob_name)
-        _, temp_path = tempfile.mkstemp(suffix=".pdf")
+        # Create a temp file and close its fd immediately to avoid Windows file locking
+        fd, temp_path = tempfile.mkstemp(suffix=".pdf")
+        os.close(fd)
         with open(temp_path, "wb") as f:
             blob.download_to_file(f)
         return temp_path
+
+    # Helper: best-effort remove to handle transient Windows file locks
+    def remove_quiet(path: str):
+        if not path:
+            return
+        for attempt in range(3):
+            try:
+                os.remove(path)
+                return
+            except PermissionError:
+                # Brief backoff; another handle may still be closing
+                time.sleep(0.1)
+            except FileNotFoundError:
+                return
 
 
     # Download all PDFs locally
@@ -59,33 +75,33 @@ def upload_assignment():
     questions_pdf_path = download_pdf_from_url(questions_url)
     textbook_pdf_path = download_pdf_from_url(textbook_url) if textbook_url else None
 
-    # Run grading — pass local file paths
-    grading_result = run_grading(
-        assignment_path=assignment_pdf_path,
-        questions_path=questions_pdf_path,
-        textbook_path=textbook_pdf_path
-    )
+    try:
+        # Run grading — pass local file paths
+        grading_result = run_grading(
+            assignment_path=assignment_pdf_path,
+            questions_path=questions_pdf_path,
+            textbook_path=textbook_pdf_path
+        )
 
-    # Save result to Firestore
-    grade_id = f"{student_id}_{assignment_id}"
-    db.collection("grades").document(grade_id).set({
-        "student_id": student_id,
-        "assignment_id": assignment_id,
-        "assignment_pdf": assignment_url,
-        "questions_pdf": questions_url,
-        "textbook_pdf": textbook_url,
-        "grading": [g.dict() for g in grading_result]
-    })
+        # Save result to Firestore
+        grade_id = f"{student_id}_{assignment_id}"
+        db.collection("grades").document(grade_id).set({
+            "student_id": student_id,
+            "assignment_id": assignment_id,
+            "assignment_pdf": assignment_url,
+            "questions_pdf": questions_url,
+            "textbook_pdf": textbook_url,
+            "grading": [g.dict() for g in grading_result]
+        })
 
-    # Clean up local temp files
-    os.remove(assignment_pdf_path)
-    os.remove(questions_pdf_path)
-    if textbook_pdf_path:
-        os.remove(textbook_pdf_path)
-
-    return jsonify({
-        "message": "Assignment uploaded and graded",
-        "grading": [g.dict() for g in grading_result]
-    })
-
+        return jsonify({
+            "message": "Assignment uploaded and graded",
+            "grading": [g.dict() for g in grading_result]
+        })
+    finally:
+        # Clean up local temp files (best effort)
+        remove_quiet(assignment_pdf_path)
+        remove_quiet(questions_pdf_path)
+        if textbook_pdf_path:
+            remove_quiet(textbook_pdf_path)
 
