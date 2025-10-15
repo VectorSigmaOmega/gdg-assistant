@@ -45,7 +45,7 @@ def run_grading(assignment_path: str, questions_path: str, textbook_path: Option
         contents.append(textbook_pdf)
 
     response = client.models.generate_content(
-        model="gemini-2.0-flash",
+        model="gemini-2.5-flash",
         contents=contents,
         config={
             'response_mime_type': 'application/json',
